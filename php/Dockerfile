@@ -28,6 +28,9 @@ RUN mkdir ${LARAVELDIRECTORY}
 WORKDIR /var/${LARAVELDIRECTORY}
 RUN composer global require "laravel/installer"
 
+RUN groupadd -g 1000 hiroki && \
+    useradd -u 1000 -g hiroki -m hiroki
+
 #RUN laravel new ${LARAVELPROJECT}
 #RUN chmod -R 775 ${LARAVELPROJECT}
 #RUN chmod -R 777 storage
