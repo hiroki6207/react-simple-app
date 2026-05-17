@@ -3,7 +3,7 @@ FROM php:8.1-fpm
 ENV HOME /root
 ENV PATH $PATH:$HOME/.composer/vendor/bin
 ENV LARAVELDIRECTORY laravel-curriculum
-ENV LARAVELPROJECT curriculum-app
+ENV LARAVELPROJECT my-todo-app
 
 COPY ./php/php.ini /usr/local/etc/php/php.ini
 
