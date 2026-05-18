@@ -1,3 +1,4 @@
+<?php
 namespace App\Enums;
 
 enum TodoStatus: int
