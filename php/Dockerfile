@@ -3,7 +3,7 @@ FROM php:8.1-fpm
 ENV HOME /root
 ENV PATH $PATH:$HOME/.composer/vendor/bin
 ENV LARAVELDIRECTORY laravel-curriculum
-ENV LARAVELPROJECT curriculum-app
+ENV LARAVELPROJECT my-todo-app
 
 COPY ./php/php.ini /usr/local/etc/php/php.ini
 
@@ -27,6 +27,9 @@ RUN mkdir ${LARAVELDIRECTORY}
 #COPY ./curriculum/laravel /var/${LARAVELDIRECTORY}
 WORKDIR /var/${LARAVELDIRECTORY}
 RUN composer global require "laravel/installer"
+
+RUN groupadd -g 1000 hiroki && \
+    useradd -u 1000 -g hiroki -m hiroki
 
 #RUN laravel new ${LARAVELPROJECT}
 #RUN chmod -R 775 ${LARAVELPROJECT}

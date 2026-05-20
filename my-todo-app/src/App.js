@@ -1,47 +1,113 @@
 import './App.css';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 function App() {
-  const [todos, setTodos] = useState([
-    { id: 1, text: 'Reactの学習', isCompleted: false },
-    { id: 2, text: 'ToDoアプリの実装', isCompleted: false },
-    // { id: 3, text: 'Deploy to production', completed: false },
-  ]);
+  const [todos, setTodos] = useState([]);
   const [inputText, setInputText] = useState('');
-
   const [editId, setEditId] = useState(null);
   const [editText, setEditText] = useState('');
 
-  const handleAdd = () => {
+  const fetchTodos = async () => {
+    try {
+      const response = await fetch('http://localhost:8080/api/todos');
+      if(!response.ok) {
+        throw new Error('ネットワークエラーが発生しました');
+      }
+      const data = await response.json();
+      setTodos(data);
+    } catch (error) {
+      console.error('エラーが発生しました:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchTodos();
+  }, []);
+
+  const handleAdd = async () => {
     if (!inputText) return;
 
-    const newTodo = {
-      id: Date.now(),
-      text: inputText,
-      isCompleted: false,
-    };
-
-    setTodos([...todos, newTodo]);
-    setInputText('');
+    try {
+      const response = await fetch('http://localhost:8080/api/todos', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          title: inputText, 
+          status: 0,
+        }),
+      });
+      if(response.ok) {
+        setInputText('');
+        fetchTodos();
+      }
+    } catch (error) {
+      console.error('エラーが発生しました:', error);
+    }
   };
 
-  const handleDelete = (id) => {
-    setTodos(todos.filter((todo) => todo.id !== id));
+  const handleDelete = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/todos/${id}`, {
+        method: 'DELETE',
+      });
+      if(response.ok) {
+        fetchTodos();
+      }
+    } catch (error) {
+      console.error('エラーが発生しました:', error);
+    }
   };
   
-  const handleToggle = (id) => {
-    setTodos(todos.map((todo) => todo.id === id ? { ...todo, isCompleted: !todo.isCompleted } : todo));
+  const handleToggle = async (todo) => {
+    try {
+      const nextStatus = todo.status === 2 ? 0 : 2;
+      const response = await fetch(`http://localhost:8080/api/todos/${todo.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          title: todo.title,
+          status: nextStatus,
+         }),
+      });
+
+      if(response.ok) {
+        fetchTodos();
+      }
+    } catch (error) {
+      console.error('エラーが発生しました:', error);
+    }
   };
 
   const handleEdit = (todo) => {
     setEditId(todo.id);
-    setEditText(todo.text);
+    setEditText(todo.title);
   };
 
-  const handleUpdate = (id) => {
-    setTodos(todos.map((todo) => todo.id === id ? { ...todo, text: editText } : todo));
-    setEditId(null);
-    setEditText('');
+  const handleUpdate = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/todos/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          title: editText,
+          status: 0,
+         }),
+      });
+
+      if (response.ok) {
+        setEditId(null);
+        setEditText('');
+        fetchTodos();
+      }
+    } catch (error) {
+      console.error('エラーが発生しました:', error);
+    }
   };
 
   return (
@@ -60,8 +126,8 @@ function App() {
               </>
             ) : (
               <>
-                <input type="checkbox" checked={todo.isCompleted} onChange={() => handleToggle(todo.id)} />
-                <span style={{ textDecoration: todo.isCompleted ? 'line-through' : 'none', marginLeft: '10px' }}>{todo.text}</span>
+                <input type="checkbox" checked={todo.status === 2} onChange={() => handleToggle(todo)} />
+                <span style={{ textDecoration: todo.status === 2 ? 'line-through' : 'none', marginLeft: '10px' }}>{todo.title}</span>
                 <button onClick={() => handleEdit(todo)} style={{ marginLeft: '10px' }}>編集</button>
                 <button onClick={() => handleDelete(todo.id)} style={{ marginLeft: '10px' }}>削除</button>
               </>
@@ -69,20 +135,6 @@ function App() {
           </li>
         ))}
       </ul>
-      {/* <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header> */}
     </div>
   );
 }

@@ -1,0 +1,12 @@
+### ToDoの一覧取得 (GET)
+GET http://localhost:8080/api/todos
+
+###
+
+### ToDoの新規登録 (POST)
+POST http://localhost:8080/api/todos
+Content-Type: application/json
+
+{
+    "title": "REST Clientでの接続テスト"
+}
