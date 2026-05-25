@@ -1,5 +1,6 @@
 import './App.css';
 import { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
 
 function App() {
   const [todos, setTodos] = useState([]);
@@ -20,6 +21,19 @@ function App() {
     }
   };
 
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch('http://localhost:8080/api/categories');
+      if(!response.ok) {
+        throw new Error('カテゴリ取得エラーが発生しました');
+      }
+      const data = await response.json();
+      setCategories(data);
+    } catch (error) {
+      console.error('エラーが発生しました:', error);
+    }
+  }
+
   useEffect(() => {
     fetchTodos();
   }, []);
@@ -36,6 +50,7 @@ function App() {
         body: JSON.stringify({ 
           title: inputText, 
           status: 0,
+          category_id: categoryId ? parseInt(categoryId) : null,
         }),
       });
       if(response.ok) {
@@ -46,6 +61,25 @@ function App() {
       console.error('エラーが発生しました:', error);
     }
   };
+
+  const handleAddCategory = async (name) => {
+    try{
+      const response = await fetch('http://localhost:8080/api/categories', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          name: name,
+        }),
+      });
+      if(response.ok) {
+        fetchCategories();
+      }
+    } catch (error) {
+      console.error('エラーが発生しました:', error);
+    }
+  }
 
   const handleDelete = async (id) => {
     try {
@@ -109,6 +143,44 @@ function App() {
       console.error('エラーが発生しました:', error);
     }
   };
+
+  return (
+    <Router>
+      <div className="App" style={{ padding: '20px' }}>
+        <h1>ToDoアプリ</h1>
+        <nav style={{ marginBottom: '20px', padding: '10px', backgroundColor: '#f0f0f0', borderRadius: '5px' }}>
+          <Link to='/' style={{ marginRight: '15px', fontWeight: 'bold', textDecoration: 'none', color: '#333' }}>タスク一覧</Link>
+          <Link to='/add' style={{  marginRight: '15px', fontWeight: 'bold', textDecoration: 'none', color: '#333' }}>➕ タスク追加ページ</Link>
+          <Link to='/categories' style={{  fontWeight: 'bold', textDecoration: 'none', color: '#333' }}>カテゴリ管理</Link>
+        </nav>
+
+        <Routes>
+          <Route path='/' element={
+            <TodoListPage
+            todos={todos}
+            categories={categories}
+            editId={editId}
+            editText={editText}
+            setEditText={setEditText}
+            setEditId={setEditId}
+            handleToggle={handleToggle}
+            handleEdit={handleEdit}
+            handleUpdate={handleUpdate}
+            handleDelete={handleDelete}
+            />
+          } />
+
+            <Route path='/add' element={
+              <TodoCreatePage onAddTodo={handleAdd} categories={categories} />
+            } />
+
+            <Route path='/categories' element={
+              <CategoryPage categories={categories} onAddCategory={handleAddCategory} />
+            } />
+        </Routes>
+      </div>
+    </Router>
+  );
 
   return (
     <div className="App" style={{ padding: '20px' }}>
