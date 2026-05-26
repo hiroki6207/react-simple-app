@@ -181,32 +181,48 @@ function App() {
       </div>
     </Router>
   );
+}
+
+function TodoCreatePage({ onAddTodo, categories }) {
+  const [text, setText] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const navigate = useNavigate();
+
+  const onSubmit = () => {
+    if(!text) return;
+    onAddTodo(text, selectedCategory);
+    setText('');
+    navigate('/');
+  }
 
   return (
-    <div className="App" style={{ padding: '20px' }}>
-      <h1>ToDoアプリ</h1>
-      <input type="text" value={inputText} onChange={(e) => setInputText(e.target.value)} placeholder="新しいToDoを入力" />
-      <button onClick={handleAdd}>追加</button>
-      <ul>
-        {todos.map((todo) => (
-          <li key={todo.id} style={{ listStyle: 'none', marginBottom: '10px' }}>
-            {editId === todo.id ? (
-              <>
-                <input type="text" value={editText} onChange={(e) => setEditText(e.target.value)} />
-                <button onClick={() => handleUpdate(todo.id)} style={{ marginLeft: '10px' }}>更新</button>
-                <button onClick={() => setEditId(null)} style={{ marginLeft: '10px' }}>キャンセル</button>
-              </>
-            ) : (
-              <>
-                <input type="checkbox" checked={todo.status === 2} onChange={() => handleToggle(todo)} />
-                <span style={{ textDecoration: todo.status === 2 ? 'line-through' : 'none', marginLeft: '10px' }}>{todo.title}</span>
-                <button onClick={() => handleEdit(todo)} style={{ marginLeft: '10px' }}>編集</button>
-                <button onClick={() => handleDelete(todo.id)} style={{ marginLeft: '10px' }}>削除</button>
-              </>
-            )}
-          </li>
-        ))}
-      </ul>
+    <div style={{ border: '1px solid #ccc', padding: '20px', borderRadius: '8px', backgroundColor: '#fafafa' }}>
+      <h2>➕ 新しいタスクの追加</h2>
+      <div style={{ marginBottom: '15px' }}>
+        <label style={{ display: 'block', marginBottom: '15px', fontWeight: 'bold' }}>タスク名：</label>
+        <input 
+          type='text' value={text} onChange={(e) => setText(e.target.value)} 
+          placeholder='' 
+          style={{ width: '300px', padding: '8px' }}
+        />
+      </div>
+
+      <div style={{ marginBottom: '20px' }}>
+        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>カテゴリーの選択：</label>
+        <select 
+          value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} 
+          style={{ width: '316px', padding: '8px' }}
+        >
+          <open value=''>-- カテゴリなし --</open>
+          {categories.map(cat => (
+            <open key={cat.id} value={cat.id}>{cat.name}</open>
+          ))}
+        </select>
+      </div>
+
+      <button onClick={onSubmit} style={{ padding: '10px 20px', backgroundColor: '#4caf50', color: '#fff', border: 'none', borderRadius: '5px', fontSize: '16px', cursor: 'pointer' }}>
+        データベースに登録して一覧へ戻る
+      </button>
     </div>
   );
 }
