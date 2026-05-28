@@ -227,4 +227,40 @@ function TodoCreatePage({ onAddTodo, categories }) {
   );
 }
 
+function CategoryPage({ categories, onAddCategory }) {
+  const [categoryName, setCategoryName] = useState('');
+
+  const onSubmit = () => {
+    if(!categoryName) return;
+    onAddCategory(categoryName);
+    setCategoryName('');
+  }
+
+  return (
+    <div style={{ border: '1px solid #ccc', padding: '20px', borderRadius: '8px', backgroundColor: '#fff3e0' }}>
+      <h2>カテゴリーの管理</h2>
+
+      <div style={{ marginBottom: '20px' }}>
+        <input 
+          type='text' value={categoryName} onChange={(e) => setCategoryName(e.target.value)} 
+          placeholder='新しいカテゴリ名' 
+          style={{ padding: '8px', width: '250px' }}
+        />
+        <button onClick={onSubmit} style={{ padding: '8px 15px', marginLeft: '10px', backgroundColor: '#ff9800', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+          ➕ カテゴリを追加
+        </button>
+      </div>
+
+      <h3>現在のカテゴリー一覧：</h3>
+      <ul>
+        {categories.map(cat => (
+          <li key={cat.id} style={{ marginBottom: '5px', fontSize: '16px', fontWeight: 'bold', color: 'e65100' }}>
+            ・{cat.name} <span style={{ fontSize: '12px', color: '#999', fontWeight: 'normal' }}>(ID: {cat.id})</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export default App;
