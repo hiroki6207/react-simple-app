@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react
 
 function App() {
   const [todos, setTodos] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [inputText, setInputText] = useState('');
   const [editId, setEditId] = useState(null);
   const [editText, setEditText] = useState('');
@@ -36,10 +37,11 @@ function App() {
 
   useEffect(() => {
     fetchTodos();
+    fetchCategories();
   }, []);
 
-  const handleAdd = async () => {
-    if (!inputText) return;
+  const handleAdd = async (title, categoryId) => {
+    if (!title) return;
 
     try {
       const response = await fetch('http://localhost:8080/api/todos', {
@@ -48,7 +50,7 @@ function App() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          title: inputText, 
+          title: title, 
           status: 0,
           category_id: categoryId ? parseInt(categoryId) : null,
         }),
@@ -183,6 +185,46 @@ function App() {
   );
 }
 
+function TodoListPage({ todos, categories, editId, editText, setEditText, setEditId, handleToggle, handleEdit, handleUpdate, handleDelete }) {
+  const getCategoryName = (categoryId) => {
+    const found = categories.find(c => c.id === categoryId);
+    return found ? found.name : '未設定';
+  };
+
+  return (
+    <div>
+      <h2>現在のタスク一覧</h2>
+      <ul>
+        {todos.map((todo) => (
+          <li key={todo.id} style={{ listStyle: 'none', marginBottom: '10px', padding: '10px', borderBottom: '1px solid #eee' }}>
+            {editId === todo.id ? (
+              <>
+                <input type='text' value={editText} onChange={(e) => setEditText(e.target.value)}/>
+                <button onClick={() => handleUpdate(todo.id)} style={{ marginLeft: '10px' }}>更新</button>
+                <button onClick={() => setEditId(null)} style={{ marginLeft: '10px' }}>キャンセル</button>
+              </>
+            ) : (
+              <>
+                <input type='checkbox' checked={todo.status === 2} onChange={() => handleToggle(todo)}/>
+                <span style={{ textDecoration: todo.status === 2 ? 'line-through' : 'none', marginLeft: '10px', fontWeight: 'bold' }}>
+                  {todo.title}
+                </span>
+
+                <span style={{ marginLeft: '10px', padding: '3px 8px', backgroundColor: '#e0f7fa', color: '#006064', borderRadius: '10px', fontSize: '12px' }}>
+                🏷️{getCategoryName(todo.category_id)}
+                </span>
+
+                <button onClick={() => handleEdit(todo)} style={{ marginLeft: '15px' }}>編集</button>
+                <button onClick={() => handleDelete(todo.id)} style={{ marginLeft: '10px', backgroundColor: '#ffcdd2', color: '#c62828', border: 'none', borderRadius: '3px', cursor: 'pointer' }}>削除</button>
+              </>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 function TodoCreatePage({ onAddTodo, categories }) {
   const [text, setText] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -203,7 +245,7 @@ function TodoCreatePage({ onAddTodo, categories }) {
         <input 
           type='text' value={text} onChange={(e) => setText(e.target.value)} 
           placeholder='' 
-          style={{ width: '300px', padding: '8px' }}
+          style={{ width: '50%', padding: '10px', borderRadius: '4px', border: '1px solid #ccc' }}
         />
       </div>
 
@@ -211,11 +253,11 @@ function TodoCreatePage({ onAddTodo, categories }) {
         <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>カテゴリーの選択：</label>
         <select 
           value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} 
-          style={{ width: '316px', padding: '8px' }}
+          style={{ width: '52%', height: '45px', padding: '10px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '16px', backgroundColor: '#fff', cursor: 'pointer' }}
         >
-          <open value=''>-- カテゴリなし --</open>
+          <option value=''>-- カテゴリなし --</option>
           {categories.map(cat => (
-            <open key={cat.id} value={cat.id}>{cat.name}</open>
+            <option key={cat.id} value={cat.id}>{cat.name}</option>
           ))}
         </select>
       </div>
