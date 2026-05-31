@@ -44,7 +44,17 @@ class CategoryController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $category = Category::findOrFail($id);
+
+        $category->update([
+            'name' => $validated['name'],
+        ]);
+
+        return response()->json($category, 200);
     }
 
     /**
@@ -52,6 +62,10 @@ class CategoryController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $category = Category::findOrFail($id);
+
+        $category->delete();
+
+        return response()->json(null, 204);
     }
 }

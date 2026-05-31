@@ -8,6 +8,8 @@ function App() {
   const [inputText, setInputText] = useState('');
   const [editId, setEditId] = useState(null);
   const [editText, setEditText] = useState('');
+  const [editCategoryId, setEditCategoryId] = useState(null);
+  const [editCategoryName, setEditCategoryName] = useState('');
 
   const fetchTodos = async () => {
     try {
@@ -145,6 +147,50 @@ function App() {
       console.error('エラーが発生しました:', error);
     }
   };
+  
+  const handleDeleteCategory = async (id) => {
+    if(!window.confirm('このカテゴリを削除しますか？')) return;
+
+    try {
+      const response = await fetch(`http://localhost:8080/api/categories/${id}`, {
+        method: 'DELETE',
+      });
+
+      if(response.ok) {
+        fetchCategories();
+      }
+    } catch (error) {
+      console.error('エラーが発生しました:', error);
+    }
+  };
+
+  const handleEditCategory = (category) => {
+    setEditCategoryId(category.id);
+    setEditCategoryName(category.name);
+  }
+
+  const handleUpdateCategory = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/categories/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          name: editCategoryName,
+         }),
+      });
+
+      if(response.ok) {
+        setEditCategoryId(null);
+        setEditCategoryName('');
+        fetchCategories();
+        fetchTodos();
+      }
+    } catch (error) {
+      console.error('エラーが発生しました:', error);
+    }
+  }
 
   return (
     <Router>
@@ -177,7 +223,17 @@ function App() {
             } />
 
             <Route path='/categories' element={
-              <CategoryPage categories={categories} onAddCategory={handleAddCategory} />
+              <CategoryPage 
+              categories={categories} 
+              onAddCategory={handleAddCategory} 
+              editCategoryId={editCategoryId}
+              editCategoryName={editCategoryName}
+              setEditCategoryName={setEditCategoryName}
+              setEditCategoryId={setEditCategoryId}
+              onEditCategory={handleEditCategory}
+              onUpdateCategory={handleUpdateCategory}
+              onDeleteCategory={handleDeleteCategory}
+              />
             } />
         </Routes>
       </div>
@@ -269,7 +325,7 @@ function TodoCreatePage({ onAddTodo, categories }) {
   );
 }
 
-function CategoryPage({ categories, onAddCategory }) {
+function CategoryPage({ categories, onAddCategory, editCategoryId, editCategoryName, setEditCategoryId, setEditCategoryName, onEditCategory, onUpdateCategory, onDeleteCategory }) {
   const [categoryName, setCategoryName] = useState('');
 
   const onSubmit = () => {
@@ -296,8 +352,25 @@ function CategoryPage({ categories, onAddCategory }) {
       <h3>現在のカテゴリー一覧：</h3>
       <ul>
         {categories.map(cat => (
-          <li key={cat.id} style={{ marginBottom: '5px', fontSize: '16px', fontWeight: 'bold', color: 'e65100' }}>
-            ・{cat.name} <span style={{ fontSize: '12px', color: '#999', fontWeight: 'normal' }}>(ID: {cat.id})</span>
+          <li key={cat.id} style={{ marginBottom: '5px', fontSize: '16px', fontWeight: 'bold', color: 'e65100', listStyle: 'none' }}>
+            {editCategoryId === cat.id ? (
+              <>
+                <input 
+                  type='text' 
+                  value={editCategoryName} 
+                  onChange={(e) => setEditCategoryName(e.target.value)} 
+                  style={{ padding: '5px',fontSize: '14px' }}
+                />
+                <button onClick={() => onUpdateCategory(cat.id)} style={{ marginLeft: '10px', padding: '5px 10px', backgroundColor: '#4caf50', color: '#fff', border: 'none', borderRadius: '3px', cursor: 'pointer' }}>更新</button>
+                <button onClick={() => setEditCategoryId(null)} style={{ marginLeft: '5px', padding: '5px 10px', backgroundColor: '#9e9e9e', color: '#fff', border: 'none', borderRadius: '3px', cursor: 'pointer' }}>キャンセル</button>
+              </>
+            ) : (
+              <>
+                ・{cat.name} <span style={{ fontSize: '12px', color: '#999', fontWeight: 'normal' }}>(ID: {cat.id})</span>
+                <button onClick={() => onEditCategory(cat)} style={{ marginLeft: '15px', padding: '3px 8px', fontSize: '12px', cursor: 'pointer' }}>編集</button>
+                <button onClick={() => onDeleteCategory(cat.id)} style={{ marginLeft: '5px', padding: '3px 8px', backgroundColor: '#ffcdd2', color: '#c62828', border: 'none', borderRadius: '3px', fontSize: '12px', cursor: 'pointer' }}>削除</button>
+              </>
+            )}
           </li>
         ))}
       </ul>
