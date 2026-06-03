@@ -10,9 +10,14 @@ class Todo extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['title', 'status'];
+    protected $fillable = ['title', 'status', 'category_id'];
 
     protected $casts = [
         'status' => TodoStatus::class,
     ];
+
+    public function category()
+    {
+        return belongsTo(Category::class);
+    }
 }

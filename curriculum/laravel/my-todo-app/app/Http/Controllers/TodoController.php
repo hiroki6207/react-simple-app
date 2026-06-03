@@ -23,14 +23,16 @@ class TodoController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
+            'category_id' => 'nullable|exists:categories,id',
         ]);
 
         $todo = Todo::create([
             'title' => $validated['title'], 
             'status' => TodoStatus::Todo,
+            'category_id' => $validated['category_id'],
         ]);
 
-        return response()->json($todo, 211);
+        return response()->json($todo, 201);
     }
 
     /**
