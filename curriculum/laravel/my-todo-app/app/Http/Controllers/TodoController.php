@@ -29,10 +29,10 @@ class TodoController extends Controller
         $todo = Todo::create([
             'title' => $validated['title'], 
             'status' => TodoStatus::Todo,
-            'category_id' => $validated['category_id'] ?? null,
+            'category_id' => $validated['category_id'],
         ]);
 
-        return response()->json($todo, 211);
+        return response()->json($todo, 201);
     }
 
     /**
